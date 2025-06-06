@@ -1,12 +1,24 @@
 import streamlit as st
+import ollama
 
 DEFAULT_MODEL = "llama3.2:latest"
 APP_TITLE = "LLM UI"
-
+SYSTEM_PROMPT = """
+You are a helpful assistant that can answer questions and help with tasks.
+When formulating your response you should use markdown formatting.
+You should also consider the user's message history, provided below.
+If you don't have enough information, just say "I don't know".
+"""
 
 def get_model_response(chat_history):
+    
+    # Prepare the prompt
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    for message in chat_history:
+        messages.append({"role": message["role"], "content": message["content"]})
 
-    return "This is a test response."
+    response = ollama.chat(model=DEFAULT_MODEL, messages=messages)
+    return response["message"]["content"]
 
 def main():
 
