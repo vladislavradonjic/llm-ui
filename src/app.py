@@ -14,14 +14,20 @@ def main():
         "You can select a model and start chatting."
     )
 
+    # Initialize session state
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
+
+    # Sidebar
+    with st.sidebar:
+        st.header("Options")
+    
 
     # Chat area
     for message in st.session_state.chat_history:
         with st.chat_message(message["role"]):
             st.write(message["content"])
-            
+
     # Input area
     user_input = st.chat_input("Enter your message here...")
 
