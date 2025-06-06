@@ -4,6 +4,10 @@ DEFAULT_MODEL = "llama3.2:latest"
 APP_TITLE = "LLM UI"
 
 
+def get_model_response(chat_history):
+
+    return "This is a test response."
+
 def main():
 
     # Configure the web app
@@ -21,7 +25,10 @@ def main():
     # Sidebar
     with st.sidebar:
         st.header("Options")
-    
+
+        if st.button("Reset Chat"):
+            st.session_state.chat_history = []
+            st.info("Chat history has been reset.")
 
     # Chat area
     for message in st.session_state.chat_history:
@@ -38,6 +45,13 @@ def main():
         with st.chat_message("user"):
             st.write(user_input)
 
+        # Get show response
+        with st.spinner("Generating response..."):
+            # Simulate a response from the model
+            response = get_model_response(st.session_state.chat_history)
+            with st.chat_message("assistant"):
+                st.write(response)
+            st.session_state.chat_history.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":
     main()
