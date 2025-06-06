@@ -10,18 +10,35 @@ You should also consider the user's message history, provided below.
 If you don't have enough information, just say "I don't know".
 """
 
-def get_model_response(chat_history):
-    
-    # Prepare the prompt
+def create_prompt(chat_history: list[dict]) -> list[dict]:
+    """Create a prompt for the LLM based on the chat history.
+    Args:
+        chat_history: List of messages in the chat history.
+    Returns:
+        List of messages formatted for the LLM.
+    """
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for message in chat_history:
         messages.append({"role": message["role"], "content": message["content"]})
 
+    return messages
+
+  
+def get_model_response(chat_history: list[dict]) -> str:
+    """Get a response from the LLM based on the chat history.
+    Args:
+        chat_history: List of messages in the chat history.
+    Returns:
+        The response from the LLM.
+    """
+    messages = create_prompt(chat_history)
+
     response = ollama.chat(model=DEFAULT_MODEL, messages=messages)
     return response["message"]["content"]
 
-def main():
 
+def main():
+    """Main function to run the Streamlit app."""
     # Configure the web app
     st.set_page_config(page_title=APP_TITLE, page_icon=":robot:")
     st.title(APP_TITLE)
