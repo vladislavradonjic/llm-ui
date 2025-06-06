@@ -10,6 +10,19 @@ You should also consider the user's message history, provided below.
 If you don't have enough information, just say "I don't know".
 """
 
+def get_available_models() -> list[str]:
+    """Fetch the list of available models from Ollama. 
+    Returns:
+        List of model names.
+    """
+    try:
+        models = ollama.list()
+        return [model["model"] for model in models["models"]]
+    except Exception as e:
+        st.error(f"Error fetching models: {e}")
+        return []
+
+
 def create_prompt(chat_history: list[dict]) -> list[dict]:
     """Create a prompt for the LLM based on the chat history.
     Args:
@@ -32,8 +45,8 @@ def get_model_response(chat_history: list[dict]) -> str:
         The response from the LLM.
     """
     messages = create_prompt(chat_history)
-
     response = ollama.chat(model=DEFAULT_MODEL, messages=messages)
+    
     return response["message"]["content"]
 
 
@@ -50,10 +63,20 @@ def main():
     # Initialize session state
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
+    if 'current_model' not in st.session_state:
+        st.session_state.current_model = DEFAULT_MODEL
 
     # Sidebar
     with st.sidebar:
         st.header("Options")
+
+        models = get_available_models()
+        st.session_state.current_model = st.selectbox(
+            "Select Model",
+            options=models,
+            index=models.index(st.session_state.current_model) if st.session_state.current_model in models else 0,
+            help="Choose the model you want to use for chatting."
+        )
 
         if st.button("Reset Chat"):
             st.session_state.chat_history = []
