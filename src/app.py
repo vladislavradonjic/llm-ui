@@ -45,8 +45,8 @@ def get_model_response(chat_history: list[dict]) -> str:
         The response from the LLM.
     """
     messages = create_prompt(chat_history)
-    response = ollama.chat(model=DEFAULT_MODEL, messages=messages)
-    
+    response = ollama.chat(model=st.session_state.current_model, messages=messages)
+
     return response["message"]["content"]
 
 
@@ -104,6 +104,7 @@ def main():
             with st.chat_message("assistant"):
                 st.write(response)
             st.session_state.chat_history.append({"role": "assistant", "content": response})
+
 
 if __name__ == "__main__":
     main()
