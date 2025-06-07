@@ -1,5 +1,6 @@
 import streamlit as st
 import ollama
+import uuid
 
 DEFAULT_MODEL = "llama3.2:latest"
 APP_TITLE = "LLM UI"
@@ -65,9 +66,13 @@ def main():
         st.session_state.chat_history = []
     if 'current_model' not in st.session_state:
         st.session_state.current_model = DEFAULT_MODEL
+    if 'session_id' not in st.session_state:
+        st.session_state.session_id = str(uuid.uuid4())
 
     # Sidebar
     with st.sidebar:
+        st.markdown(f"**Session ID:** `{st.session_state.session_id}`")
+        
         st.header("Options")
 
         models = get_available_models()
@@ -80,7 +85,8 @@ def main():
 
         if st.button("Reset Chat"):
             st.session_state.chat_history = []
-            st.info("Chat history has been reset.")
+            st.session_state.session_id = str(uuid.uuid4())
+            st.toast("Chat history has been reset.")
 
     # Chat area
     for message in st.session_state.chat_history:
