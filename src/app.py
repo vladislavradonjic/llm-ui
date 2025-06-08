@@ -2,11 +2,13 @@ import streamlit as st
 import ollama
 import uuid
 import json
+from datetime import datetime
 
 
 DEFAULT_MODEL = "llama3.2:latest"
 APP_TITLE = "LLM UI"
 CHAT_SAVE_PATH = "saved-chats"
+LOGFILE_PATH = "logs/interaction_log.json"
 SYSTEM_PROMPT = """
 You are a helpful assistant that can answer questions and help with tasks.
 When formulating your response you should use markdown formatting.
@@ -51,11 +53,38 @@ def get_model_response(chat_history: list[dict]) -> str:
     messages = create_prompt(chat_history)
     response = ollama.chat(model=st.session_state.current_model, messages=messages)
 
+    log_interaction(
+        session_id=st.session_state.session_id,
+        role=chat_history[-1]["role"] if chat_history else "user",
+        query=chat_history[-1]["content"] if chat_history else "",
+        prompt=json.dumps(messages, indent=2),
+        response=response["message"]["content"]
+    )
+
     return response["message"]["content"]
 
-# TODO: Make conversation history loadable from a file
-# TODO: Restore session id on conversation load
-# TODO: Log state and interactions to a file or database
+def log_interaction(session_id, role, query, prompt, response):
+    """Log the interaction to a file or database.
+    Args:
+        session_id: Unique identifier for the session.
+        role: Role of the user (e.g., "user", "assistant").
+        query: User's query or message.
+        prompt: Prompt sent to the model.
+        response: Response from the model.
+    """
+    log_entry = {
+        "session_id": session_id,
+        "timestamp": datetime.now().isoformat(),
+        "role": role,
+        "query": query,
+        "prompt": prompt,
+        "response": response
+    }
+    
+    with open(LOGFILE_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(log_entry) + "\n")
+
+
 # TODO: Handle reasoning model responses 
 
 def main():
