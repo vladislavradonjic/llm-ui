@@ -2,6 +2,7 @@ import streamlit as st
 import ollama
 import uuid
 import json
+import re
 from datetime import datetime
 
 
@@ -85,7 +86,21 @@ def log_interaction(session_id, role, query, prompt, response):
         f.write(json.dumps(log_entry) + "\n")
 
 
-# TODO: Handle reasoning model responses 
+def split_think_content(response: str):
+    """
+    Splits the response into 'thinking' (inside <think>...</think>) and 'message' (outside).
+    Returns a tuple: (message, thinking)
+    """
+    think_pattern = re.compile(r"<think>(.*?)</think>", re.DOTALL | re.IGNORECASE)
+    thinking = ""
+    message = response
+    match = think_pattern.search(response)
+    if match:
+        thinking = match.group(1).strip()
+        # Remove the <think>...</think> part from the message
+        message = think_pattern.sub("", response).strip()
+    return message, thinking
+
 
 def main():
     """Main function to run the Streamlit app."""
@@ -152,7 +167,18 @@ def main():
     # Chat area
     for message in st.session_state.chat_history:
         with st.chat_message(message["role"]):
-            st.write(message["content"])
+            # Only process <think> tags for assistant messages
+            if message["role"] == "assistant":
+                msg, thinking = split_think_content(message["content"])
+                if thinking:
+                    # Use Streamlit's expander for optional thinking display
+                    st.write(msg)
+                    with st.expander("Show model reasoning"):
+                        st.markdown(thinking)
+                else:
+                    st.write(message["content"])
+            else:
+                st.write(message["content"])
 
     # Input area
     user_input = st.chat_input("Enter your message here...")
@@ -169,7 +195,13 @@ def main():
             # Simulate a response from the model
             response = get_model_response(st.session_state.chat_history)
             with st.chat_message("assistant"):
-                st.write(response)
+                msg, thinking = split_think_content(response)
+                if thinking:
+                    st.write(msg)
+                    with st.expander("Show model reasoning"):
+                        st.markdown(thinking)
+                else:
+                    st.write(response)
             st.session_state.chat_history.append({"role": "assistant", "content": response})
 
 
