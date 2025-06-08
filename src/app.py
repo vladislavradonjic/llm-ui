@@ -1,6 +1,8 @@
 import streamlit as st
 import ollama
 import uuid
+import json
+
 
 DEFAULT_MODEL = "llama3.2:latest"
 APP_TITLE = "LLM UI"
@@ -50,6 +52,12 @@ def get_model_response(chat_history: list[dict]) -> str:
 
     return response["message"]["content"]
 
+# TODO: Track full conversation history in the session state
+# TODO: Make conversation history savable
+# TODO: Make conversation history loadable from a file
+# TODO: Restore session id on conversation load
+# TODO: Log state and interactions to a file or database
+# TODO: Handle reasoning model responses 
 
 def main():
     """Main function to run the Streamlit app."""
@@ -87,6 +95,15 @@ def main():
             st.session_state.chat_history = []
             st.session_state.session_id = str(uuid.uuid4())
             st.toast("Chat history has been reset.")
+
+        if st.button("Save Chat"):
+            if len(st.session_state.chat_history) > 1:
+                filename = f"chat_history_{st.session_state.session_id}.json"
+                with open(filename, "w", encoding="utf-8") as f:
+                    json.dump(st.session_state.chat_history, f, indent=4)
+                st.toast(f"Chat history saved to `{filename}`.")
+            else:
+                st.toast("No chat history to save.")
 
     # Chat area
     for message in st.session_state.chat_history:
