@@ -6,6 +6,7 @@ import json
 
 DEFAULT_MODEL = "llama3.2:latest"
 APP_TITLE = "LLM UI"
+CHAT_SAVE_PATH = "saved-chats"
 SYSTEM_PROMPT = """
 You are a helpful assistant that can answer questions and help with tasks.
 When formulating your response you should use markdown formatting.
@@ -98,7 +99,7 @@ def main():
 
         if st.button("Save Chat"):
             if len(st.session_state.chat_history) > 1:
-                filename = f"chat_history_{st.session_state.session_id}.json"
+                filename = f"{CHAT_SAVE_PATH}/chat_history_{st.session_state.session_id}.json"
                 with open(filename, "w", encoding="utf-8") as f:
                     json.dump(st.session_state.chat_history, f, indent=4)
                 st.toast(f"Chat history saved to `{filename}`.")
