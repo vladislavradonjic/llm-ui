@@ -55,7 +55,6 @@ def get_model_response(chat_history: list[dict]) -> str:
     response = ollama.chat(model=st.session_state.current_model, messages=messages)
 
     log_interaction(
-        session_id=st.session_state.session_id,
         role=chat_history[-1]["role"] if chat_history else "user",
         query=chat_history[-1]["content"] if chat_history else "",
         prompt=json.dumps(messages, indent=2),
@@ -64,7 +63,7 @@ def get_model_response(chat_history: list[dict]) -> str:
 
     return response["message"]["content"]
 
-def log_interaction(session_id, role, query, prompt, response):
+def log_interaction(role, query, prompt, response):
     """Log the interaction to a file or database.
     Args:
         session_id: Unique identifier for the session.
@@ -74,8 +73,9 @@ def log_interaction(session_id, role, query, prompt, response):
         response: Response from the model.
     """
     log_entry = {
-        "session_id": session_id,
+        "session_id": st.session_state.session_id,
         "timestamp": datetime.now().isoformat(),
+        "model": st.session_state.current_model,
         "role": role,
         "query": query,
         "prompt": prompt,
