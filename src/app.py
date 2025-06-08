@@ -53,8 +53,6 @@ def get_model_response(chat_history: list[dict]) -> str:
 
     return response["message"]["content"]
 
-# TODO: Track full conversation history in the session state
-# TODO: Make conversation history savable
 # TODO: Make conversation history loadable from a file
 # TODO: Restore session id on conversation load
 # TODO: Log state and interactions to a file or database
@@ -105,6 +103,22 @@ def main():
                 st.toast(f"Chat history saved to `{filename}`.")
             else:
                 st.toast("No chat history to save.")
+
+        uploaded_history = st.file_uploader("Load Chat", type=["json"], label_visibility="collapsed")
+        if uploaded_history is not None:
+            try:
+                chat_history = json.load(uploaded_history)
+                # validate chat history format
+                if isinstance(chat_history, list) and all(
+                    isinstance(msg, dict) and "role" in msg and "content" in msg for msg in chat_history
+                ):
+                    st.session_state.chat_history = chat_history
+                    st.session_state.session_id = str(uuid.uuid4())
+                    st.toast("Chat history loaded successfully.")
+                else:
+                    st.toast("Invalid chat history format.")
+            except Exception as e:
+                st.toast(f"Error loading chat history: {e}")
 
     # Chat area
     for message in st.session_state.chat_history:
